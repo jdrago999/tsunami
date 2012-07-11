@@ -9,7 +9,10 @@ create session with weight 4 as 'test1':
 create session with weight 1 as 'test2':
     get '/foo'
 
-Then compile it to tsung a tsung xml file  with
+Then compile it to tsung a tsung xml file with
 
-ts2tsung.py --from=simple.ts --to=tsung.xml
+python ts2tsung.py --from=simple.ts --to=tsung.xml
 
+or you can invoke tsung driectly with
+
+python runts.py --source=simple.ts

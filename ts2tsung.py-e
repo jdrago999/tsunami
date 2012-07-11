@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 from tsunami import TsungBuilder
 from tsunami import LoadParser
