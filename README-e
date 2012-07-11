@@ -1,0 +1,15 @@
+A language for making load tests easy.  Simply specify a load test file
+like:
+
+# simple.ts
+create session with weight 4 as 'test1':
+    get '/api'
+    delete '/view/view1'
+
+create session with weight 1 as 'test2':
+    get '/foo'
+
+Then compile it to tsung a tsung xml file  with
+
+ts2tsung.py --from=simple.ts --to=tsung.xml
+
