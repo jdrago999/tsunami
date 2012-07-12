@@ -64,8 +64,6 @@ create load:
         self.assertEqual(spawn2.max_duration_units, "minutes")
         self.assertEqual(spawn2.max_users, "")
 
-
-           
 if __name__ == '__main__':
     unittest.main()
 

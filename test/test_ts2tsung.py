@@ -15,7 +15,7 @@ class TestFullLoadTestingDSL(unittest.TestCase):
 
         checker = LXMLOutputChecker()
         if not checker.check_output(want, got, 0):
-            message = checker.output_difference(Example("", want), got, 0)
+            message = checker.output_difference(Example("", got), want, 0)
             raise AssertionError(message)
 
     def test_simple(self):

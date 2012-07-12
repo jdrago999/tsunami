@@ -37,10 +37,25 @@ class TsungBuilder(object):
             E.server(host="localhost", port="8000", type="tcp"))
 
     def get_load(self):
-        return E.load(
-            E.arrivalphase(
-                E.users(arrivalrate="1", unit="second"), \
-                    phase="1", duration="1", unit="second"))
+        load = self.config.load
+        load.phase_count = 0
+        arrival_phase_tags = [self.get_arrival_phase(p, load) 
+                              for p in load.spawns]
+
+        return E.load(*arrival_phase_tags)
+
+    def get_arrival_phase(self, p, load):
+        load.phase_count += 1
+        user_attrs = dict(arrivalrate=p.user_time,
+                          unit=p.user_time_units[:-1])
+        if p.max_users:
+            user_attrs["maxnumber"] = p.max_users
+
+        return E.arrivalphase(
+            E.users(**user_attrs), phase=str(load.phase_count),
+                duration=p.max_duration, unit=p.max_duration_units[:-1])
+
+
 
     def get_sessions(self):
         total_weight = sum([ int(s.weight) for s in self.config.sessions])
