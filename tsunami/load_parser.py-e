@@ -6,8 +6,13 @@ from pprint import pprint
 class LoadParser:
     def __init__(self):
         intNum = Word(nums)
+        floatNum = intNum + Optional("." + intNum)
         string = QuotedString("'")
         regex = QuotedString("/")
+        time_period = Keyword("minutes") | Keyword("seconds")
+
+        pause = Group(Keyword("pause") + Keyword("between") + \
+                      floatNum + Keyword("and") + floatNum) + time_period
 
         method = (Keyword("get") | Keyword("post") | Keyword("put") \
             | Keyword("delete")).setResultsName("method")
@@ -18,9 +23,9 @@ class LoadParser:
         match_list = Group(OneOrMore(match)).setResultsName("matches")
 
         request = Group(method + url + Optional(match_list))
-        action = request
+        action = request | pause
         action_list = \
-            Group(OneOrMore(request)).setResultsName("actions")
+            Group(OneOrMore(action)).setResultsName("actions")
 
         session = Group( Keyword("create") + \
             Keyword("session") + Keyword("with") + \
@@ -30,7 +35,6 @@ class LoadParser:
             ":" + action_list)
         session_list = OneOrMore(session).setResultsName("sessions")
         
-        time_period = Keyword("minutes") | Keyword("seconds")
         spawn = Group( Keyword("spawn") + \
             intNum.setResultsName("user_count") + \
             Keyword("users") + Keyword("every") + \

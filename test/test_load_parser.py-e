@@ -88,6 +88,18 @@ create load:
         # as long as we got here and the above didn't die, we're good
         self.assertTrue(True) 
 
+    def test_pause(self):
+        parser = LoadParser()
+        result = parser.parse("""
+create session with weight 1 as 'test1':
+    pause between 1.5 and 3.2 seconds
+
+create load:                
+    spawn 1 users every 1 seconds for 1 seconds
+""")
+        self.assertTrue(True) 
+
+
 if __name__ == '__main__':
     unittest.main()
 
