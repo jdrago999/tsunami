@@ -23,6 +23,14 @@
       <request>
         <http url="/view/view1" version="1.1" method="DELETE"/>
       </request>
+      <request>
+        <http method="POST" url="/view?name=view2&amp;value=foo"
+              version="1.1" />
+        <match do="log" 
+               when="nomatch">^{"success": "View 'view2' created"}$</match>
+        <match do="log" when="nomatch">success</match>
+
+      </request>
     </session>
     <session name="test2" probability="75" type="ts_http">
       <request>

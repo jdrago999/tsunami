@@ -13,8 +13,9 @@ class LoadParser:
             | Keyword("delete")).setResultsName("method")
         url = string.setResultsName("url")
         match = Group( \
-            Keyword("ensure") + Keyword("match") + regex)
-        match_list = Group(OneOrMore(match))
+            Keyword("ensure") + Keyword("match") + \
+            regex.setResultsName("regex"))
+        match_list = Group(OneOrMore(match)).setResultsName("matches")
 
         request = Group(method + url + Optional(match_list))
         action = request

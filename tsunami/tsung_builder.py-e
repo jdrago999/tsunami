@@ -77,4 +77,10 @@ class TsungBuilder(object):
     def get_request(self, r):
         method = r.method.upper()
         attrs = dict(url=r.url, method=method, version="1.1") 
-        return E.request(E.http(**attrs))
+        tags = [E.http(**attrs)]
+        tags.extend([self.get_match(m) for m in r.matches])
+
+        return E.request(*tags)
+
+    def get_match(self, m):
+        return E.match(m.regex, do="log", when="nomatch") 

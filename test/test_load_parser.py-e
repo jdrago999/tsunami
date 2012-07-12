@@ -39,6 +39,11 @@ create load:
         delete_action = session.actions[1]
         self.assertEqual(delete_action.method, "delete")
         self.assertEqual(delete_action.url, "/view/view1")
+        post_action = session.actions[2]
+        self.assertEqual(len(post_action.matches), 2)
+        match = post_action.matches[1]
+        self.assertEqual(match.regex, "success")
+
 
     def test_load(self):
         parser = LoadParser()
