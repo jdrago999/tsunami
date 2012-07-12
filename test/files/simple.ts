@@ -1,3 +1,5 @@
+# A sample tsunami code file
+
 create session with weight 4 as 'test1':
     get '/api'
     delete '/view/view1'

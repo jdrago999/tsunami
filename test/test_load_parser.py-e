@@ -64,6 +64,21 @@ create load:
         self.assertEqual(spawn2.max_duration_units, "minutes")
         self.assertEqual(spawn2.max_users, "")
 
+    def test_comment(self):
+        parser = LoadParser()
+        result = parser.parse("""
+# Here is a big comment
+# That spans multiple lines
+
+create session with weight 1 as 'test1':
+    get '/foo'
+
+create load:                
+    spawn 1 users every 1 seconds for 1 seconds
+""")
+        # as long as we got here and the above didn't die, we're good
+        self.assertTrue(True) 
+
 if __name__ == '__main__':
     unittest.main()
 

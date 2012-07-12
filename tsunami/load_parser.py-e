@@ -1,6 +1,6 @@
 
 from pyparsing import Keyword, Word, nums, QuotedString, OneOrMore, \
-    Forward, Group, Optional
+    Forward, Group, Optional, restOfLine
 
 from pprint import pprint
 class LoadParser:
@@ -38,8 +38,11 @@ class LoadParser:
         spawn_list = OneOrMore(spawn).setResultsName("spawns")
         load = Group( Keyword("create") + Keyword("load") + ":" + \
             spawn_list).setResultsName("load")
+
+        comment = "#" + restOfLine
+
         script = session_list + load
-       
+        script.ignore(comment)
 
         self.grammar = script
         self.symbols = {
