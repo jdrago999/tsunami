@@ -7,11 +7,16 @@ class LoadParser:
     def __init__(self):
         intNum = Word(nums)
         string = QuotedString("'")
+        regex = QuotedString("/")
 
         method = (Keyword("get") | Keyword("post") | Keyword("put") \
             | Keyword("delete")).setResultsName("method")
         url = string.setResultsName("url")
-        request = Group(method + url)
+        match = Group( \
+            Keyword("ensure") + Keyword("match") + regex)
+        match_list = Group(OneOrMore(match))
+
+        request = Group(method + url + Optional(match_list))
         action = request
         action_list = \
             Group(OneOrMore(request)).setResultsName("actions")

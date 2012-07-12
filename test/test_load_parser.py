@@ -16,6 +16,10 @@ class TestLoadParser(unittest.TestCase):
 create session with weight 4 as 'test1':
     get '/api'
     delete '/view/view1'
+    post '/view?name=view2&value=foo'
+        ensure match /^{"success": "View 'view2' created"}$/
+        ensure match /success/
+
 
 create session with weight 1 as 'test2':
     get '/foo'
@@ -28,7 +32,7 @@ create load:
         session = result.sessions[0]
         self.assertEqual(session.weight, "4")
         self.assertEqual(session.name, "test1")        
-        self.assertEqual(len(session.actions), 2)
+        self.assertEqual(len(session.actions), 3)
         get_action = session.actions[0]
         self.assertEqual(get_action.method, "get")
         self.assertEqual(get_action.url, "/api")
