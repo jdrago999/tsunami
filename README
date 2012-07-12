@@ -9,6 +9,12 @@ create session with weight 4 as 'test1':
 create session with weight 1 as 'test2':
     get '/foo'
 
+create load:                
+    spawn 2 users every 4 seconds for 10 minutes up to 100 users
+    spawn 5 users every 10 seconds for 50 minutes
+# end simple.ts
+
+
 Then compile it to tsung a tsung xml file with
 
 python ts2tsung.py --from=simple.ts --to=tsung.xml
