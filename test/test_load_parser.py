@@ -36,6 +36,8 @@ create load:
         get_action = session.actions[0]
         self.assertEqual(get_action.method, "get")
         self.assertEqual(get_action.url, "/api")
+        self.assertEqual(get_action.type, "get")
+
         delete_action = session.actions[1]
         self.assertEqual(delete_action.method, "delete")
         self.assertEqual(delete_action.url, "/view/view1")
@@ -92,13 +94,20 @@ create load:
         parser = LoadParser()
         result = parser.parse("""
 create session with weight 1 as 'test1':
+    get '/bar'
     pause between 1.5 and 3.2 seconds
+    get '/foo'
 
 create load:                
     spawn 1 users every 1 seconds for 1 seconds
 """)
-        self.assertTrue(True) 
-
+        session = result.sessions[0]
+        self.assertEquals(len(session.actions), 3)
+        pause_action = session.actions[1]
+        self.assertEqual(pause_action.type, "pause")
+        self.assertEqual(pause_action.lower_time, "1.5")
+        self.assertEqual(pause_action.upper_time, "3.2")
+        self.assertEqual(pause_action.time_units, "seconds")
 
 if __name__ == '__main__':
     unittest.main()
