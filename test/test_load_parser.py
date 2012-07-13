@@ -111,7 +111,7 @@ create load:
     def test_var(self):
         parser = LoadParser()
         result = parser.parse("""
-create session with weight 1 as 'test_unique':
+create session with weight 1 as 'test_var':
     var pin is a unique number from 1000 to 9999
     var user_name is a unique string of length 5 to 10
     var password is a random string of length 15 to 20
