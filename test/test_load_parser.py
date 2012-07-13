@@ -112,7 +112,7 @@ create load:
         parser = LoadParser()
         result = parser.parse("""
 create session with weight 1 as 'test_unique':
-    var pin is a unique number from 1000 to 9999.44
+    var pin is a unique number from 1000 to 9999
     var user_name is a unique string of length 5 to 10
     var password is a random string of length 15 to 20
     post '/user/create?user_name=$user_name&password=$password&pin=$pin'
@@ -122,7 +122,16 @@ create load:
 """)
         session = result.sessions[0]
         self.assertEquals(len(session.actions), 4)
-
+        self.assertEqual(session.actions[0].asDict(), dict(type="var", 
+            name="pin", ordering="unique", data_type="number", 
+            min="1000", max="9999"))
+        self.assertEqual(session.actions[1].asDict(), dict(type="var", 
+            name="user_name", ordering="unique", data_type="string", 
+            min="5", max="10"))
+        self.assertEqual(session.actions[2].asDict(), dict(type="var", 
+            name="password", ordering="random", data_type="string", 
+            min="15", max="20"))
+        
 
 
 if __name__ == '__main__':

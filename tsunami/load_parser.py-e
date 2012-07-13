@@ -13,14 +13,18 @@ class LoadParser:
         time_period = Keyword("minutes") | Keyword("seconds")
 
         length_range = Keyword("of") + Keyword("length") + \
-            intNum + Keyword("to") + intNum
-        numeric_range = Keyword("from") + floatNum + Keyword("to") + \
-            floatNum
+            intNum.setResultsName("min") + Keyword("to") + \
+            intNum.setResultsName("max")
+        numeric_range = Keyword("from") + \
+            floatNum.setResultsName("min") + Keyword("to") + \
+            floatNum.setResultsName("max")
         data_type = Keyword("string") | Keyword("number")
         ordering = Keyword("unique") | Keyword("random")
         var_range = length_range | numeric_range
-        var = Group(Keyword("var") + ident + Keyword("is") + \
-                    Keyword("a") + ordering + data_type + var_range) 
+        var = Group(Keyword("var").setResultsName("type") + \
+            ident.setResultsName("name") +  Keyword("is") + \
+            Keyword("a") + ordering.setResultsName("ordering") + \
+            data_type.setResultsName("data_type") + var_range) 
 
         pause = Group(Keyword("pause").setResultsName("type") + \
             Keyword("between") + \
