@@ -14,8 +14,7 @@ class LoadParser:
         pause = Group(Keyword("pause").setResultsName("type") + \
             Keyword("between") + \
             floatNum.setResultsName("lower_time") + Keyword("and") + \
-            floatNum.setResultsName("upper_time") + \
-            time_period.setResultsName("time_units"))
+            floatNum.setResultsName("upper_time") + Keyword("seconds"))
 
         get = Keyword("get").setResultsName("method")
         post = Keyword("post").setResultsName("method")
