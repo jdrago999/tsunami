@@ -14,7 +14,7 @@ class TestLoadParser(unittest.TestCase):
         parser = LoadParser()
         result = parser.parse("""
 create session with weight 4 as 'test1':
-    get '/api'
+    get "/api"
     delete '/view/view1'
     post '/view?name=view2&value=foo'
         ensure match /^{"success": "View 'view2' created"}$/
@@ -107,6 +107,23 @@ create load:
         self.assertEqual(pause_action.type, "pause")
         self.assertEqual(pause_action.lower_time, "1.5")
         self.assertEqual(pause_action.upper_time, "3.2")
+
+    def test_var(self):
+        parser = LoadParser()
+        result = parser.parse("""
+create session with weight 1 as 'test_unique':
+    var pin is a unique number from 1000 to 9999.44
+    var user_name is a unique string of length 5 to 10
+    var password is a random string of length 15 to 20
+    post '/user/create?user_name=$user_name&password=$password&pin=$pin'
+
+create load:                
+    spawn 1 users every 1 seconds for 1 seconds
+""")
+        session = result.sessions[0]
+        self.assertEquals(len(session.actions), 4)
+
+
 
 if __name__ == '__main__':
     unittest.main()

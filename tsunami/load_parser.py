@@ -1,15 +1,26 @@
 
 from pyparsing import Keyword, Word, nums, QuotedString, OneOrMore, \
-    Forward, Group, Optional, restOfLine, Combine
+    Forward, Group, Optional, restOfLine, Combine, alphas, alphanums
 
 from pprint import pprint
 class LoadParser:
     def __init__(self):
         intNum = Word(nums)
         floatNum = Combine(intNum + Optional("." + intNum))
-        string = QuotedString("'")
+        string = QuotedString("'") | QuotedString('"')
         regex = QuotedString("/")
+        ident = Word( alphas, alphanums + "_" )
         time_period = Keyword("minutes") | Keyword("seconds")
+
+        length_range = Keyword("of") + Keyword("length") + \
+            intNum + Keyword("to") + intNum
+        numeric_range = Keyword("from") + floatNum + Keyword("to") + \
+            floatNum
+        data_type = Keyword("string") | Keyword("number")
+        ordering = Keyword("unique") | Keyword("random")
+        var_range = length_range | numeric_range
+        var = Group(Keyword("var") + ident + Keyword("is") + \
+                    Keyword("a") + ordering + data_type + var_range) 
 
         pause = Group(Keyword("pause").setResultsName("type") + \
             Keyword("between") + \
@@ -29,7 +40,7 @@ class LoadParser:
         match_list = Group(OneOrMore(match)).setResultsName("matches")
 
         request = Group(method + url + Optional(match_list)).setName("request")
-        action = request | pause
+        action = request | pause | var
         action_list = \
             Group(OneOrMore(action)).setResultsName("actions")
 
