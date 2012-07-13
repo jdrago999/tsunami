@@ -65,14 +65,14 @@ class TsungBuilder(object):
         return E.sessions(*session_tags)
 
     def get_session(self, s, total_weight):
-        request_tags = self.get_requests(s)
+        action_tags = self.get_actions(s)
         probability = str(int(float(s.weight) / total_weight * 100.0))
-        return E.session(*request_tags, 
+        return E.session(*action_tags, 
                           name=s.name, probability=probability, type="ts_http")
 
-    def get_requests(self, session):
+    def get_actions(self, session):
         # TODO: Grep out type='request' once we get some other action types
-        return [self.get_request(a) for a in session.actions]
+        return [self.get_action(a) for a in session.actions]
 
     def get_request(self, r):
         method = r.method.upper()
@@ -81,6 +81,16 @@ class TsungBuilder(object):
         tags.extend([self.get_match(m) for m in r.matches])
 
         return E.request(*tags)
+
+    def get_action(self, a):
+        if a.type == "pause":
+            return self.get_pause(a)
+        else:
+            return self.get_request(a)
+    
+    def get_pause(self, p):
+        return E.thinktime(max=p.upper_time, min=p.lower_time, random="true")
+
 
     def get_match(self, m):
         return E.match(m.regex, do="log", when="nomatch") 

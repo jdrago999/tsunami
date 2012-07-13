@@ -20,6 +20,7 @@
       <request>
         <http url="/api" version="1.1" method="GET"/>
       </request>
+      <thinktime min="1.5" max="3.2" random="true"></thinktime>
       <request>
         <http url="/view/view1" version="1.1" method="DELETE"/>
       </request>

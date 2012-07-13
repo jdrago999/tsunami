@@ -107,7 +107,6 @@ create load:
         self.assertEqual(pause_action.type, "pause")
         self.assertEqual(pause_action.lower_time, "1.5")
         self.assertEqual(pause_action.upper_time, "3.2")
-        self.assertEqual(pause_action.time_units, "seconds")
 
 if __name__ == '__main__':
     unittest.main()
