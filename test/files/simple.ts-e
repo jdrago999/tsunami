@@ -8,9 +8,11 @@ create session with weight 4 as 'test1':
         ensure match /^{"success": "View 'view2' created"}$/
         ensure match /success/
 
-
 create session with weight 12 as 'test2':
-    get '/api'
+    var pin is a unique number from 1000 to 9999
+    var username is a random string of length 10
+    var pass_code is a random number from 1000 to 9999
+    post '/user/create?username=$username&pass_code=$pass_code&pin=$pin'
 
 create load:                
     spawn 2 users every 4 seconds for 10 minutes up to 100 users

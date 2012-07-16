@@ -12,19 +12,19 @@ class LoadParser:
         ident = Word( alphas, alphanums + "_" )
         time_period = Keyword("minutes") | Keyword("seconds")
 
-        length_range = Keyword("of") + Keyword("length") + \
-            intNum.setResultsName("min") + Keyword("to") + \
-            intNum.setResultsName("max")
-        numeric_range = Keyword("from") + \
+        ordering = Keyword("unique") | Keyword("random")
+        string_type = Keyword("random").setResultsName("ordering") + \
+            Keyword("string").setResultsName("data_type") + \
+            Keyword("of") + Keyword("length") + \
+            intNum.setResultsName("length")
+        numeric_type = ordering.setResultsName("ordering") + \
+            Keyword("number").setResultsName("data_type") + Keyword("from") + \
             floatNum.setResultsName("min") + Keyword("to") + \
             floatNum.setResultsName("max")
-        data_type = Keyword("string") | Keyword("number")
-        ordering = Keyword("unique") | Keyword("random")
-        var_range = length_range | numeric_range
+        var_type = string_type | numeric_type
         var = Group(Keyword("var").setResultsName("type") + \
             ident.setResultsName("name") +  Keyword("is") + \
-            Keyword("a") + ordering.setResultsName("ordering") + \
-            data_type.setResultsName("data_type") + var_range) 
+            Keyword("a") + var_type)
 
         pause = Group(Keyword("pause").setResultsName("type") + \
             Keyword("between") + \

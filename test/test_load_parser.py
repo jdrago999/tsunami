@@ -108,13 +108,25 @@ create load:
         self.assertEqual(pause_action.lower_time, "1.5")
         self.assertEqual(pause_action.upper_time, "3.2")
 
+
+    def test_var_no_unique_string(self):
+        parser = LoadParser()
+        code = """
+create session with weight 1 as 'test_var':
+    var user_name is a unique string of length 5 to 10
+create load:                
+    spawn 1 users every 1 seconds for 1 seconds
+"""
+        with self.assertRaises(Exception):
+            result = parser.parse(code)
+
     def test_var(self):
         parser = LoadParser()
         result = parser.parse("""
 create session with weight 1 as 'test_var':
     var pin is a unique number from 1000 to 9999
-    var user_name is a unique string of length 5 to 10
-    var password is a random string of length 15 to 20
+    var user_name is a random string of length 5
+    var password is a random string of length 15
     post '/user/create?user_name=$user_name&password=$password&pin=$pin'
 
 create load:                
@@ -126,11 +138,11 @@ create load:
             name="pin", ordering="unique", data_type="number", 
             min="1000", max="9999"))
         self.assertEqual(session.actions[1].asDict(), dict(type="var", 
-            name="user_name", ordering="unique", data_type="string", 
-            min="5", max="10"))
+            name="user_name", ordering="random", data_type="string", 
+            length="5"))
         self.assertEqual(session.actions[2].asDict(), dict(type="var", 
             name="password", ordering="random", data_type="string", 
-            min="15", max="20"))
+            length="15"))
         
 
 

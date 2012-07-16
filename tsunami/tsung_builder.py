@@ -74,15 +74,9 @@ class TsungBuilder(object):
         # TODO: Grep out type='request' once we get some other action types
         return [self.get_action(a) for a in session.actions]
 
-    def get_request(self, r):
-        method = r.method.upper()
-        attrs = dict(url=r.url, method=method, version="1.1") 
-        tags = [E.http(**attrs)]
-        tags.extend([self.get_match(m) for m in r.matches])
-
-        return E.request(*tags)
-
     def get_action(self, a):
+        if a.type == "var":
+            return self.get_var(a)
         if a.type == "pause":
             return self.get_pause(a)
         else:
@@ -91,6 +85,31 @@ class TsungBuilder(object):
     def get_pause(self, p):
         return E.thinktime(max=p.upper_time, min=p.lower_time, random="true")
 
+    def get_var(self, v):
+        attrs = {}
+        if v.data_type == "string":
+            attrs["sourcetype"] = "random_string"
+            attrs["length"] = v.length            
+        else:
+            if v.ordering == "random":
+                attrs["sourcetype"] = "random_number"
+                attrs["start"] = v.min
+                attrs["end"] = v.max
+            else:
+                attrs["sourcetype"] = "file"
+                attrs["order"] = "iter"
+                attrs["fileid"] = "_pin.csv"
+                attrs["delimiter"] = ";"
+
+        return E.setdynvars(E.var(name=v.name), **attrs)
+
+    def get_request(self, r):
+        method = r.method.upper()
+        attrs = dict(url=r.url, method=method, version="1.1") 
+        tags = [E.http(**attrs)]
+        tags.extend([self.get_match(m) for m in r.matches])
+
+        return E.request(*tags)
 
     def get_match(self, m):
         return E.match(m.regex, do="log", when="nomatch") 
