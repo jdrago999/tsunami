@@ -1,5 +1,6 @@
 from lxml.builder import E
 from lxml import etree
+import re
 
 class TsungBuilder(object):
     def __init__(self, config):
@@ -104,12 +105,18 @@ class TsungBuilder(object):
         return E.setdynvars(E.var(name=v.name), **attrs)
 
     def get_request(self, r):
+        url = r.url
+        new_url = re.sub(r'\$(\w*)', r'%%\1%%', url)
+
         method = r.method.upper()
-        attrs = dict(url=r.url, method=method, version="1.1") 
-        tags = [E.http(**attrs)]
+        tags = [E.http(url=new_url, method=method, version="1.1")]
         tags.extend([self.get_match(m) for m in r.matches])
 
-        return E.request(*tags)
+        req_attrs = dict()
+        if new_url != url:
+            req_attrs["substr"] = "true"
+
+        return E.request(*tags, **req_attrs)
 
     def get_match(self, m):
         return E.match(m.regex, do="log", when="nomatch") 
