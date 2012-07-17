@@ -2,7 +2,7 @@
 
 create session with weight 4 as 'test1':
     get '/api'
-    pause between 1.5 and 3.2 seconds
+    pause between 1 and 3 seconds
     delete '/view/view1'
     post '/view?name=view2&value=foo'
         ensure match /^{"success": "View 'view2' created"}$/
