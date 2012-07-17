@@ -99,7 +99,7 @@ class TsungBuilder(object):
             else:
                 attrs["sourcetype"] = "file"
                 attrs["order"] = "iter"
-                attrs["fileid"] = "_pin.csv"
+                attrs["fileid"] = "_%s.csv" % v.name
                 attrs["delimiter"] = ";"
 
         return E.setdynvars(E.var(name=v.name), **attrs)
