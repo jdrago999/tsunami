@@ -9,7 +9,8 @@ create session with weight 4 as 'test1':
         ensure match /success/
 
 create session with weight 12 as 'test2':
-    var pin is a unique number from 1000 to 9999
+    var pin is a unique number from 1000 to 1005 # short range to
+                                                 # make testing easy
     var username is a random string of length 10
     var pass_code is a random number from 1000 to 9999
     post '/user/create?username=$username&pass_code=$pass_code&pin=$pin'

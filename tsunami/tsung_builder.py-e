@@ -1,10 +1,12 @@
 from lxml.builder import E
 from lxml import etree
 import re
+import os
 
 class TsungBuilder(object):
-    def __init__(self, config):
+    def __init__(self, config, output_path):
         self.config = config
+        self.output_path = output_path
 
     def get_xml(self):
         pieces = []
@@ -56,8 +58,6 @@ class TsungBuilder(object):
             E.users(**user_attrs), phase=str(load.phase_count),
                 duration=p.max_duration, unit=p.max_duration_units[:-1])
 
-
-
     def get_sessions(self):
         total_weight = sum([ int(s.weight) for s in self.config.sessions])
 
@@ -72,7 +72,6 @@ class TsungBuilder(object):
                           name=s.name, probability=probability, type="ts_http")
 
     def get_actions(self, session):
-        # TODO: Grep out type='request' once we get some other action types
         return [self.get_action(a) for a in session.actions]
 
     def get_action(self, a):
@@ -97,10 +96,12 @@ class TsungBuilder(object):
                 attrs["start"] = v.min
                 attrs["end"] = v.max
             else:
+                filename = "_%s.csv" % v.name
                 attrs["sourcetype"] = "file"
                 attrs["order"] = "iter"
-                attrs["fileid"] = "_%s.csv" % v.name
+                attrs["fileid"] = filename
                 attrs["delimiter"] = ";"
+                self.create_range_file(filename, int(v.min), int(v.max))
 
         return E.setdynvars(E.var(name=v.name), **attrs)
 
@@ -120,3 +121,15 @@ class TsungBuilder(object):
 
     def get_match(self, m):
         return E.match(m.regex, do="log", when="nomatch") 
+
+    def create_range_file(self, name, range_min, range_max):
+        self.create_ouptupt_path()
+        filename = os.path.join(self.output_path, name)
+        with open(filename, "w+") as f:
+            for num in xrange(range_min, range_max + 1):
+                f.write(str(num) + "\n")  
+
+    def create_ouptupt_path(self):
+        dir = self.output_path
+        if not os.path.exists(dir):
+            os.makedirs(dir)
