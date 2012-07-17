@@ -11,7 +11,10 @@ create session with weight 4 as 'test1':
         ensure match /success/
 
 create session with weight 1 as 'test2':
-    get '/foo'
+    var pin is a unique number from 1000 to 9999
+    var user_name is a random string of length 5
+    var password is a random string of length 15
+    post '/user/create?user_name=$user_name&password=$password&pin=$pin'
 
 create load:                
     spawn 2 users every 4 seconds for 10 minutes up to 100 users
