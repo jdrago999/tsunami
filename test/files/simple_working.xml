@@ -44,7 +44,7 @@
       <setdynvars sourcetype="random_number" start="1000" end="9999">
         <var name="pass_code" />
       </setdynvars>
-      <request substr="true">
+      <request subst="true">
         <http 
 url="/user/create?username=%%username%%&amp;pass_code=%%pass_code%%&amp;pin=%%pin%%" 
             version="1.1" method="POST"/>

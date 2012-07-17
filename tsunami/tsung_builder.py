@@ -115,7 +115,7 @@ class TsungBuilder(object):
 
         req_attrs = dict()
         if new_url != url:
-            req_attrs["substr"] = "true"
+            req_attrs["subst"] = "true"
 
         return E.request(*tags, **req_attrs)
 
