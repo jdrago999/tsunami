@@ -110,8 +110,8 @@ class TsungBuilder(object):
         new_url = re.sub(r'\$(\w*)', r'%%\1%%', url)
 
         method = r.method.upper()
-        tags = [E.http(url=new_url, method=method, version="1.1")]
-        tags.extend([self.get_match(m) for m in r.matches])
+        tags = [self.get_match(m) for m in r.matches] 
+        tags.append(E.http(url=new_url, method=method, version="1.1"))
 
         req_attrs = dict()
         if new_url != url:
