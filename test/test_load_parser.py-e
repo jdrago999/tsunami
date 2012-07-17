@@ -90,12 +90,23 @@ create load:
         # as long as we got here and the above didn't die, we're good
         self.assertTrue(True) 
 
+    def test_paue_no_float(self):
+        parser = LoadParser()
+        code = """
+create session with weight 1 as 'test_var':
+    pause between 1.5 and 3.2 seconds
+create load:                
+    spawn 1 users every 1 seconds for 1 seconds
+"""
+        with self.assertRaises(Exception):
+            result = parser.parse(code)
+
     def test_pause(self):
         parser = LoadParser()
         result = parser.parse("""
 create session with weight 1 as 'test1':
     get '/bar'
-    pause between 1.5 and 3.2 seconds
+    pause between 1 and 3 seconds
     get '/foo'
 
 create load:                
@@ -105,8 +116,8 @@ create load:
         self.assertEquals(len(session.actions), 3)
         pause_action = session.actions[1]
         self.assertEqual(pause_action.type, "pause")
-        self.assertEqual(pause_action.lower_time, "1.5")
-        self.assertEqual(pause_action.upper_time, "3.2")
+        self.assertEqual(pause_action.lower_time, "1")
+        self.assertEqual(pause_action.upper_time, "3")
 
 
     def test_var_no_unique_string(self):
