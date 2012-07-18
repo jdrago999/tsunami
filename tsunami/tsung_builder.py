@@ -127,13 +127,16 @@ class TsungBuilder(object):
         method = r.method.upper()
 
         new_url = re.sub(r'\$(\w*)', r'%%\1%%', url)
-        url_has_substitutions = url != new_url
         tags = [self.get_match(m) for m in r.matches] 
-        match_has_substitutions = bool([m for m in r.matches 
-            if re.search(r'\$(\w*)', m.regex)])
         tags.append(E.http(url=new_url, method=method, version="1.1"))
 
         req_attrs = dict()
+
+        # figure out if any matches have substitutions.  This happens
+        # when any of the matches contian '$word'
+        match_has_substitutions = bool([m for m in r.matches 
+            if re.search(r'\$(\w*)', m.regex)])
+        url_has_substitutions = url != new_url
         if url_has_substitutions or match_has_substitutions:
             req_attrs["subst"] = "true"
 
