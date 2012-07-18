@@ -7,6 +7,7 @@ class TsungBuilder(object):
     def __init__(self, config, output_path):
         self.config = config
         self.output_path = output_path
+        self.csvs = [] 
 
     def get_xml(self):
         pieces = []
@@ -26,10 +27,20 @@ class TsungBuilder(object):
         servers = self.get_servers()
         load = self.get_load()
         sessions = self.get_sessions()
-        
-        tags = E.tsung(*[clients, servers, load, sessions], 
+        options = self.get_options()
+
+
+        tags = E.tsung(*[clients, servers, load, options, sessions], 
                        loglevel="info", dumptraffic="false")
         return tags
+
+    def get_options(self):
+        options = [self.get_option(file_id, filename) \
+            for file_id, filename in self.csvs] 
+        return E.options(*options)
+
+    def get_option(self, file_id, filename):
+        return E.option(id=file_id, name="file_server", value=filename)
 
     def get_clients(self):
         return E.clients(
@@ -97,13 +108,19 @@ class TsungBuilder(object):
                 attrs["end"] = v.max
             else:
                 filename = "_%s.csv" % v.name
+                file_id = "%s_file" % v.name
                 attrs["sourcetype"] = "file"
                 attrs["order"] = "iter"
-                attrs["fileid"] = filename
+                attrs["fileid"] = file_id
                 attrs["delimiter"] = ";"
-                self.create_range_file(filename, int(v.min), int(v.max))
+                self.create_range_file( \
+                    filename, int(v.min), int(v.max))
+                self.add_csv(file_id, filename)
 
         return E.setdynvars(E.var(name=v.name), **attrs)
+
+    def add_csv(self, file_id, filename):
+        self.csvs.append((file_id, filename))
 
     def get_request(self, r):
         url = r.url

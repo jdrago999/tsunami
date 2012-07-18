@@ -15,6 +15,9 @@
       <users arrivalrate="10" unit="second"/>
     </arrivalphase>
   </load>
+  <options>
+    <option name="file_server" id="pin_file" value="_pin.csv"></option>
+  </options>
   <sessions>
     <session name="test1" probability="25" type="ts_http">
       <request>
@@ -33,8 +36,7 @@
       </request>
     </session>
     <session name="test2" probability="75" type="ts_http">
-      <setdynvars 
-          sourcetype="file" fileid="_pin.csv" delimiter=";" order="iter">
+      <setdynvars sourcetype="file" fileid="pin_file" delimiter=";" order="iter">
         <var name="pin" />
       </setdynvars>
       <setdynvars sourcetype="random_string" length="10">
