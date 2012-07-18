@@ -4,8 +4,9 @@ create session with weight 4 as 'test1':
     get '/api'
     pause between 1 and 3 seconds
     delete '/view/view1'
+    var coincidence is a random number from 1 to 2
     post '/view?name=view2&value=foo'
-        ensure match /^{"success": "View 'view2' created"}$/
+        ensure match /^{"success": "View 'view$coincidence' created"}$/
         ensure match /success/
 
 create session with weight 12 as 'test2':
@@ -14,7 +15,6 @@ create session with weight 12 as 'test2':
     var username is a random string of length 10
     var pass_code is a random number from 1000 to 9999
     post '/user/create?username=$username&pass_code=$pass_code&pin=$pin'
-
 create load:                
     spawn 2 users every 4 seconds for 2 minutes up to 100 users
     spawn 5 users every 10 seconds for 3 minutes

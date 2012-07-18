@@ -27,9 +27,12 @@
       <request>
         <http url="/view/view1" version="1.1" method="DELETE"/>
       </request>
-      <request>
+      <setdynvars sourcetype="random_number" start="1" end="2">
+        <var name="coincidence" />
+      </setdynvars>
+      <request subst="true">
         <match do="log" 
-               when="nomatch">^{"success": "View 'view2' created"}$</match>
+               when="nomatch">^{"success": "View 'view%%coincidence%%' created"}$</match>
         <match do="log" when="nomatch">success</match>
         <http method="POST" url="/view?name=view2&amp;value=foo"
               version="1.1" />

@@ -124,14 +124,17 @@ class TsungBuilder(object):
 
     def get_request(self, r):
         url = r.url
-        new_url = re.sub(r'\$(\w*)', r'%%\1%%', url)
-
         method = r.method.upper()
+
+        new_url = re.sub(r'\$(\w*)', r'%%\1%%', url)
+        url_has_substitutions = url != new_url
         tags = [self.get_match(m) for m in r.matches] 
+        match_has_substitutions = bool([m for m in r.matches 
+            if re.search(r'\$(\w*)', m.regex)])
         tags.append(E.http(url=new_url, method=method, version="1.1"))
 
         req_attrs = dict()
-        if new_url != url:
+        if url_has_substitutions or match_has_substitutions:
             req_attrs["subst"] = "true"
 
         return E.request(*tags, **req_attrs)
