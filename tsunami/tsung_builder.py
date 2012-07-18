@@ -126,16 +126,16 @@ class TsungBuilder(object):
         url = r.url
         method = r.method.upper()
 
-        new_url = re.sub(r'\$(\w*)', r'%%\1%%', url)
+        new_url = self.substitute(url)
         tags = [self.get_match(m) for m in r.matches] 
         tags.append(E.http(url=new_url, method=method, version="1.1"))
 
         req_attrs = dict()
 
         # figure out if any matches have substitutions.  This happens
-        # when any of the matches contian '$word'
+        # when any of the match regexes contian '$word'
         match_has_substitutions = bool([m for m in r.matches 
-            if re.search(r'\$(\w*)', m.regex)])
+            if self.substitute(m.regex) != m.regex])
         url_has_substitutions = url != new_url
         if url_has_substitutions or match_has_substitutions:
             req_attrs["subst"] = "true"
@@ -143,7 +143,13 @@ class TsungBuilder(object):
         return E.request(*tags, **req_attrs)
 
     def get_match(self, m):
-        return E.match(m.regex, do="log", when="nomatch") 
+        sub_regex = self.substitute(m.regex)
+
+        return E.match(sub_regex, do="log", when="nomatch") 
+
+    def substitute(self, s):
+        """replace $word with %%word%%"""
+        return re.sub(r'\$(\w+)', r'%%\1%%', s)
 
     def create_range_file(self, name, range_min, range_max):
         self.create_ouptupt_path()
