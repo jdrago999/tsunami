@@ -2,6 +2,7 @@
 import argparse
 import time
 import os
+import shutil
 
 from tsunami import TsungBuilder
 from tsunami import LoadParser
@@ -21,12 +22,14 @@ if __name__ == '__main__':
     lp = LoadParser()
     config = lp.parse(code) 
 
-    
-    tb = TsungBuilder(config)
-    to_filename = "/tmp/tsung-tsunami-%s.xml" % time.time()
+    to_dir = "/tmp/tsung-tsunami-%s" % time.time()    
+    os.makedirs(to_dir)
+
+    tb = TsungBuilder(config, to_dir)
+    to_filename = os.path.join(to_dir, "tsung.xml")
     with open(to_filename, "w+") as f:
         f.write(tb.get_xml())    
 
-    cmd = "tsung -f test/files/simple_working.xml start"
+    cmd = "cd %s && tsung -f tsung.xml start && cd - " % to_dir
     os.system(cmd)
-    os.remove(to_filename)
+    shutil.rmtree(to_dir)

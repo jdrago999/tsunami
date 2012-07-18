@@ -16,5 +16,5 @@ create session with weight 12 as 'test2':
     post '/user/create?username=$username&pass_code=$pass_code&pin=$pin'
 
 create load:                
-    spawn 2 users every 4 seconds for 10 minutes up to 100 users
-    spawn 5 users every 10 seconds for 50 minutes
+    spawn 2 users every 4 seconds for 2 minutes up to 100 users
+    spawn 5 users every 10 seconds for 3 minutes
