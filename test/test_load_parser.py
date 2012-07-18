@@ -166,8 +166,13 @@ create load:
     spawn 1 users every 1 seconds for 1 seconds
 """)
         
-        self.assertTrue(True)
-
+        session = result.sessions[0]
+        self.assertEquals(len(session.actions), 2)
+        using = session.actions[0]
+        self.assertEquals(using.type, "using")
+        self.assertEquals(using.vars.asList(), ["view_name", "view_value"])
+        self.assertEquals(using.filename, "views.csv")
+        self.assertEquals(using.ordering, "randomly")
 
 if __name__ == '__main__':
     unittest.main()

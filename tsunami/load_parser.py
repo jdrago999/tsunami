@@ -32,8 +32,10 @@ class LoadParser:
 
         ident_list = delimitedList( ident )
         using_ordering = Keyword("randomly") | Keyword("sequential")
-        using = Keyword("using") + ident_list + Keyword("from") + \
-            string + using_ordering
+        using = Group(Keyword("using").setResultsName("type") + \
+            ident_list.setResultsName("vars")  + Keyword("from") + \
+            string.setResultsName("filename") + \
+            using_ordering.setResultsName("ordering"))
 
 
         pause = Group(Keyword("pause").setResultsName("type") + \
