@@ -1,6 +1,9 @@
 
 from pyparsing import Keyword, Word, nums, QuotedString, OneOrMore, \
-    Forward, Group, Optional, restOfLine, Combine, alphas, alphanums
+    Forward, Group, Optional, restOfLine, Combine, alphas, \
+    alphanums, delimitedList
+    
+        
 
 from pprint import pprint
 class LoadParser:
@@ -26,6 +29,13 @@ class LoadParser:
             ident.setResultsName("name") +  Keyword("is") + \
             Keyword("a") + var_type)
 
+
+        ident_list = delimitedList( ident )
+        using_ordering = Keyword("randomly") | Keyword("sequential")
+        using = Keyword("using") + ident_list + Keyword("from") + \
+            string + using_ordering
+
+
         pause = Group(Keyword("pause").setResultsName("type") + \
             Keyword("between") + \
             intNum.setResultsName("lower_time") + Keyword("and") + \
@@ -44,7 +54,7 @@ class LoadParser:
         match_list = Group(OneOrMore(match)).setResultsName("matches")
 
         request = Group(method + url + Optional(match_list)).setName("request")
-        action = request | pause | var
+        action = request | pause | var | using
         action_list = \
             Group(OneOrMore(action)).setResultsName("actions")
 

@@ -155,6 +155,18 @@ create load:
             name="password", ordering="random", data_type="string", 
             length="15"))
         
+    def test_file(self):
+
+        parser = LoadParser()
+        result = parser.parse("""
+create session with weight 1 as 'test_file':
+    using view_name, view_value from 'views.csv' randomly
+    post '/user/create?user_name=$user_name&password=$password&pin=$pin'
+create load:                
+    spawn 1 users every 1 seconds for 1 seconds
+""")
+        
+        self.assertTrue(True)
 
 
 if __name__ == '__main__':
