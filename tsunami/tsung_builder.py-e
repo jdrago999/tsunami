@@ -2,6 +2,7 @@ from lxml.builder import E
 from lxml import etree
 import re
 import os
+from pprint import pprint
 
 class TsungBuilder(object):
     def __init__(self, config, output_path):
@@ -88,11 +89,22 @@ class TsungBuilder(object):
     def get_action(self, a):
         if a.type == "var":
             return self.get_var(a)
+        if a.type == "using":
+            return self.get_using(a)
         if a.type == "pause":
             return self.get_pause(a)
         else:
             return self.get_request(a)
     
+    def get_using(self, u):
+        
+        var_tags = [E.var(name=v) for v in u.vars]
+        base_filename = os.path.splitext(u.filename)[0]
+        file_id = "%s_file" % base_filename
+        self.add_csv(file_id, u.filename)
+        return E.setdynvars(*var_tags, sourcetype="file", \
+            fileid=file_id, delimiter=";", order="random")
+
     def get_pause(self, p):
         return E.thinktime(max=p.upper_time, min=p.lower_time, random="true")
 

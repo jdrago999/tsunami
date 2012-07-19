@@ -10,6 +10,7 @@ create session with weight 4 as 'test1':
         ensure match /success/
 
 create session with weight 12 as 'test2':
+    using view_name, view_value from 'views.csv' randomly
     var pin is a unique number from 1000 to 1005 # short range to
                                                  # make testing easy
     var username is a random string of length 10
