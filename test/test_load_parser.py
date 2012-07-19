@@ -174,6 +174,18 @@ create load:
         self.assertEquals(using.filename, "views.csv")
         self.assertEquals(using.ordering, "randomly")
 
+    def test_get_all(self):
+        parser = LoadParser()
+        result = parser.parse("""
+create session with weight 1 as 'test_file':
+    get all '/about/'
+create load:                
+    spawn 1 users every 1 seconds for 1 seconds
+""")
+
+
+        self.assertTrue(True)
+
 if __name__ == '__main__':
     unittest.main()
 
