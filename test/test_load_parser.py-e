@@ -178,13 +178,16 @@ create load:
         parser = LoadParser()
         result = parser.parse("""
 create session with weight 1 as 'test_file':
-    get all '/about/'
+    get all '/full'
+    get '/single/page'
 create load:                
     spawn 1 users every 1 seconds for 1 seconds
 """)
 
-
-        self.assertTrue(True)
+        actions = result.sessions[0].actions
+        full, single = actions[0], actions[1]
+        self.assertTrue(full.all)
+        self.assertFalse(single.all)
 
 if __name__ == '__main__':
     unittest.main()

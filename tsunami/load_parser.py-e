@@ -54,7 +54,9 @@ class LoadParser:
             regex.setResultsName("regex"))
         match_list = Group(OneOrMore(match)).setResultsName("matches")
 
-        request = Group(method + Optional(Keyword("all")) + url + Optional(match_list)).setName("request")
+        request = Group(method + \
+            Optional(Keyword("all")).setResultsName("all") + \
+            url + Optional(match_list)).setName("request")
         action = request | pause | var | using
         action_list = \
             Group(OneOrMore(action)).setResultsName("actions")
