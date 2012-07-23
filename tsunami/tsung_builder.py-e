@@ -5,10 +5,16 @@ import os
 from pprint import pprint
 
 class TsungBuilder(object):
-    def __init__(self, config, output_path):
+    def __init__(self, config={}, output_path="."):
         self.config = config
         self.output_path = output_path
         self.csvs = [] 
+
+    def get_dependency_xpath(self):
+        return "//link[@rel='stylesheet']/@href|//img/@src|//script/@src"
+        return \
+          "//link[@rel='stylesheet']/@href|" + \
+          "//img[starts-with(@src, '//localhost') or starts-with(@src, 'https://localhost') or starts-with(@src, 'http://localhost') or not(starts-with(@src, 'http'))]/@src|//script/@src"
 
     def get_xml(self):
         pieces = []
@@ -94,7 +100,9 @@ class TsungBuilder(object):
         if a.type == "pause":
             return self.get_pause(a)
         else:
-            return self.get_request(a)
+            regex_matches = [m.regex for m in a.matches]
+            return self.get_request(method=a.method, url=a.url, \
+                regex_matches=regex_matches)
     
     def get_using(self, u):
         
@@ -134,28 +142,27 @@ class TsungBuilder(object):
     def add_csv(self, file_id, filename):
         self.csvs.append((file_id, filename))
 
-    def get_request(self, r):
-        url = r.url
-        method = r.method.upper()
+    def get_request(self, url, method, regex_matches):
+        method = method.upper()
 
         new_url = self.substitute(url)
-        tags = [self.get_match(m) for m in r.matches] 
+        tags = [self.get_match(regex) for regex in regex_matches] 
         tags.append(E.http(url=new_url, method=method, version="1.1"))
 
         req_attrs = dict()
 
         # figure out if any matches have substitutions.  This happens
         # when any of the match regexes contian '$word'
-        match_has_substitutions = bool([m for m in r.matches 
-            if self.substitute(m.regex) != m.regex])
+        match_has_substitutions = bool([regex for regex in regex_matches 
+            if self.substitute(regex) != regex])
         url_has_substitutions = url != new_url
         if url_has_substitutions or match_has_substitutions:
             req_attrs["subst"] = "true"
 
         return E.request(*tags, **req_attrs)
 
-    def get_match(self, m):
-        sub_regex = self.substitute(m.regex)
+    def get_match(self, regex):
+        sub_regex = self.substitute(regex)
 
         return E.match(sub_regex, do="log", when="nomatch") 
 

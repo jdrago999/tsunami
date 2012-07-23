@@ -8,6 +8,7 @@ create session with weight 4 as 'test1':
     post '/view?name=view2&value=foo'
         ensure match /^{"success": "View 'view$coincidence' created"}$/
         ensure match /success/
+    get all '/'
 
 create session with weight 12 as 'test2':
     using view_name, view_value from 'views.csv' randomly

@@ -8,34 +8,70 @@
     <server host="localhost" port="8000" type="tcp"/>
   </servers>
   <load>
-    <arrivalphase phase="1" duration="10" unit="minute">
+    <arrivalphase phase="1" duration="2" unit="minute">
       <users maxnumber="100" arrivalrate="4" unit="second"/>
     </arrivalphase>
-    <arrivalphase  phase="2" duration="50" unit="minute">
+    <arrivalphase  phase="2" duration="3" unit="minute">
       <users arrivalrate="10" unit="second"/>
     </arrivalphase>
   </load>
+  <options>
+    <option name="file_server" id="views_file" value="views.csv"></option>
+    <option name="file_server" id="pin_file"
+            value="_pin.csv"></option>
+  </options>
   <sessions>
     <session name="test1" probability="25" type="ts_http">
       <request>
         <http url="/api" version="1.1" method="GET"/>
       </request>
-      <thinktime min="1.5" max="3.2" random="true"></thinktime>
+      <thinktime min="1" max="3" random="true"></thinktime>
       <request>
         <http url="/view/view1" version="1.1" method="DELETE"/>
       </request>
-      <request>
+      <setdynvars sourcetype="random_number" start="1" end="2">
+        <var name="coincidence" />
+      </setdynvars>
+      <request subst="true">
+        <match do="log" 
+               when="nomatch">^{"success": "View 'view%%coincidence%%' created"}$</match>
+        <match do="log" when="nomatch">success</match>
         <http method="POST" url="/view?name=view2&amp;value=foo"
               version="1.1" />
-        <match do="log" 
-               when="nomatch">^{"success": "View 'view2' created"}$</match>
-        <match do="log" when="nomatch">success</match>
-
       </request>
+      <request>
+        <dyn_variable name="css_list" 
+                      xpath="//link[@rel='stylesheet']/@href "/> 
+        <dyn_variable name="img_list" 
+                      xpath="//img/@src"/> 
+        <dyn_variable name="script_list" 
+                      xpath="//script/@src"/> 
+        <http url="/" version="1.1" method="GET"/>
+      </request>
+      <foreach name="css" in="css_list">
+        <request subst="true">
+          <http url="%%_css" method="GET" version="1.1"/>
+        </request>
+      </foreach>
+      <foreach name="img" in="img_list">
+        <request subst="true">
+          <http url="%%_img%%" method="GET" version="1.1"/>
+        </request>
+      </foreach>
+      <foreach name="script" in="scirpt_list">
+        <request subst="true">
+          <http url="%%_script" method="GET" version="1.1"/>
+        </request>
+      </foreach>
     </session>
     <session name="test2" probability="75" type="ts_http">
-      <setdynvars 
-          sourcetype="file" fileid="_pin.csv" delimiter=";" order="iter">
+      <setdynvars sourcetype="file" fileid="views_file" delimiter=";" 
+                  order="random">
+        <var name="view_name" />
+        <var name="view_value" />
+      </setdynvars>
+
+      <setdynvars sourcetype="file" fileid="pin_file" delimiter=";" order="iter">
         <var name="pin" />
       </setdynvars>
       <setdynvars sourcetype="random_string" length="10">
