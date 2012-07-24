@@ -179,7 +179,9 @@ class TsungBuilder(object):
 
     def get_dependency_forecach(self, name):
         list_name = "%s_list" % name
-        exclude = r'^(https?:)?\/\/(?!%s\b)' % self.server_hostname
+        exclude = r'^(https?:)?\/\/(?!%s\b)' % \
+            re.escape(self.server_hostname)
+
         url = ''.join(['%%', "_", name, '%%' ])
         http = E.http(url=url, method="GET", version="1.1")
         request = E.request(http, subst="true")
