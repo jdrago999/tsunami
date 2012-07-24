@@ -41,7 +41,7 @@
       </request>
       <request>
         <dyn_variable name="css_list" 
-                      xpath="//link[@rel='stylesheet']/@href "/> 
+                      xpath="//link[@rel='stylesheet']/@href"/> 
         <dyn_variable name="img_list" 
                       xpath="//img/@src"/> 
         <dyn_variable name="script_list" 

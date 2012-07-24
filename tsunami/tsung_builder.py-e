@@ -4,17 +4,13 @@ import re
 import os
 from pprint import pprint
 
+# TODO: Grep out non local http requests for request_all
+
 class TsungBuilder(object):
     def __init__(self, config={}, output_path="."):
         self.config = config
         self.output_path = output_path
         self.csvs = [] 
-
-    def get_dependency_xpath(self):
-        return "//link[@rel='stylesheet']/@href|//img/@src|//script/@src"
-        return \
-          "//link[@rel='stylesheet']/@href|" + \
-          "//img[starts-with(@src, '//localhost') or starts-with(@src, 'https://localhost') or starts-with(@src, 'http://localhost') or not(starts-with(@src, 'http'))]/@src|//script/@src"
 
     def get_xml(self):
         pieces = []
@@ -90,7 +86,15 @@ class TsungBuilder(object):
                           name=s.name, probability=probability, type="ts_http")
 
     def get_actions(self, session):
-        return [self.get_action(a) for a in session.actions]
+        tags = []
+        for a in session.actions:
+            action = self.get_action(a)
+            if isinstance(action, list): 
+                tags.extend(action)
+            else:
+                tags.append(action)
+
+        return tags
 
     def get_action(self, a):
         if a.type == "var":
@@ -102,7 +106,7 @@ class TsungBuilder(object):
         else:
             regex_matches = [m.regex for m in a.matches]
             return self.get_request(method=a.method, url=a.url, \
-                regex_matches=regex_matches)
+                regex_matches=regex_matches, retrieve_all=a.all)
     
     def get_using(self, u):
         
@@ -142,12 +146,17 @@ class TsungBuilder(object):
     def add_csv(self, file_id, filename):
         self.csvs.append((file_id, filename))
 
-    def get_request(self, url, method, regex_matches):
+    def get_request(self, url, method, regex_matches, retrieve_all=False):
+        outer_tags = []
         method = method.upper()
 
         new_url = self.substitute(url)
-        tags = [self.get_match(regex) for regex in regex_matches] 
-        tags.append(E.http(url=new_url, method=method, version="1.1"))
+        inner_tags = [self.get_match(regex) for regex in regex_matches] 
+        # TODO: make sure vars and match have the correct order
+        # TODO: Make sure we can have multiple set vars with the same name
+        if retrieve_all:
+            inner_tags.extend(self.get_dependency_vars())
+        inner_tags.append(E.http(url=new_url, method=method, version="1.1"))
 
         req_attrs = dict()
 
@@ -159,7 +168,19 @@ class TsungBuilder(object):
         if url_has_substitutions or match_has_substitutions:
             req_attrs["subst"] = "true"
 
-        return E.request(*tags, **req_attrs)
+        outer_tags.append(E.request(*inner_tags, **req_attrs)) 
+        return outer_tags
+
+    def get_dependency_vars(self):
+        tag_attrs = [
+            {'name': 'css_list', \
+                 'xpath': "//link[@rel='stylesheet']/@href"},
+            {'name': 'img_list', \
+                 'xpath': "//img/@src"},
+            {'name': 'script_list', \
+                 'xpath': "//script/@src"},
+        ]
+        return [E.dyn_variable(**attrs) for attrs in tag_attrs]
 
     def get_match(self, regex):
         sub_regex = self.substitute(regex)

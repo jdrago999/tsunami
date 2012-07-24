@@ -40,6 +40,12 @@
               version="1.1" />
       </request>
       <request>
+        <dyn_variable name="css_list" 
+                      xpath="//link[@rel='stylesheet']/@href"/> 
+        <dyn_variable name="img_list" 
+                      xpath="//img/@src"/> 
+        <dyn_variable name="script_list" 
+                      xpath="//script/@src"/> 
         <http url="/" version="1.1" method="GET"/>
       </request>
     </session>
