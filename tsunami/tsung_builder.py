@@ -53,7 +53,7 @@ class TsungBuilder(object):
         
     def get_servers(self):
         return E.servers(
-            E.server(host="localhost", port="8000", type="tcp"))
+            E.server(host=self.server_hostname, port="8000", type="tcp"))
 
     def get_load(self):
         load = self.config.load
@@ -179,7 +179,7 @@ class TsungBuilder(object):
 
     def get_dependency_forecach(self, name):
         list_name = "%s_list" % name
-        exclude = r'^(https?:)?\/\/(?!localhost\b)'
+        exclude = r'^(https?:)?\/\/(?!%s\b)' % self.server_hostname
         url = ''.join(['%%', "_", name, '%%' ])
         http = E.http(url=url, method="GET", version="1.1")
         request = E.request(http, subst="true")
