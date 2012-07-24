@@ -169,7 +169,18 @@ class TsungBuilder(object):
             req_attrs["subst"] = "true"
 
         outer_tags.append(E.request(*inner_tags, **req_attrs)) 
+        if retrieve_all:
+            for name in ("css", "img", "script"):
+                outer_tags.append(self.get_dependency_forecach(name))
+
         return outer_tags
+
+    def get_dependency_forecach(self, name):
+        list_name = "%s_list" % name
+        url = ''.join(['%%', "_", name, '%%' ])
+        http = E.http(url=url, method="GET", version="1.1")
+        request = E.request(http, subst="true")
+        return E.foreach(request, **{'name':name, 'in':list_name})
 
     def get_dependency_vars(self):
         tag_attrs = [
