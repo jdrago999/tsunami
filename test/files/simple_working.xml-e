@@ -48,17 +48,20 @@
                       xpath="//script/@src"/> 
         <http url="/" version="1.1" method="GET"/>
       </request>
-      <foreach name="css" in="css_list">
+      <foreach name="css" in="css_list" 
+               exclude="^(https?:)?\/\/(?!localhost\b)">
         <request subst="true">
           <http url="%%_css%%" method="GET" version="1.1"/>
         </request>
       </foreach>
-      <foreach name="img" in="img_list">
+      <foreach name="img" in="img_list" 
+               exclude="^(https?:)?\/\/(?!localhost\b)">
         <request subst="true">
           <http url="%%_img%%" method="GET" version="1.1"/>
         </request>
       </foreach>
-      <foreach name="script" in="script_list">
+      <foreach name="script" in="script_list" 
+               exclude="^(https?:)?\/\/(?!localhost\b)">
         <request subst="true">
           <http url="%%_script%%" method="GET" version="1.1"/>
         </request>

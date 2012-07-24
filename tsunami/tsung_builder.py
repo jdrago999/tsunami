@@ -10,7 +10,9 @@ class TsungBuilder(object):
     def __init__(self, config={}, output_path="."):
         self.config = config
         self.output_path = output_path
-        self.csvs = [] 
+        self.server_hostname = "localhost"
+        self.csvs = []
+
 
     def get_xml(self):
         pieces = []
@@ -177,10 +179,12 @@ class TsungBuilder(object):
 
     def get_dependency_forecach(self, name):
         list_name = "%s_list" % name
+        exclude = r'^(https?:)?\/\/(?!localhost\b)'
         url = ''.join(['%%', "_", name, '%%' ])
         http = E.http(url=url, method="GET", version="1.1")
         request = E.request(http, subst="true")
-        return E.foreach(request, **{'name':name, 'in':list_name})
+        return E.foreach(request, **{'name':name, 'in':list_name, \
+                                     'exclude': exclude})
 
     def get_dependency_vars(self):
         tag_attrs = [
