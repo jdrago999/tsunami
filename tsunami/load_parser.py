@@ -70,7 +70,6 @@ class LoadParser:
         session_list = OneOrMore(session).setResultsName("sessions")
         
         spawn = Group( Keyword("spawn") + \
-            intNum.setResultsName("user_count") + \
             Keyword("users") + Keyword("every") + \
             intNum.setResultsName("user_time") + \
             time_period.setResultsName("user_time_units") + \
@@ -89,10 +88,6 @@ class LoadParser:
         script.ignore(comment)
 
         self.grammar = script
-        self.symbols = {
-            'sessions': []
-        }
-
 
     def parse(self, code):
         result = self.grammar.parseString(code)

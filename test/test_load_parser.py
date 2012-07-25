@@ -25,7 +25,7 @@ create session with weight 1 as 'test2':
     get '/foo'
 
 create load:
-    spawn 1 users every 1 seconds for 1 seconds
+    spawn users every 1 seconds for 1 seconds
 """)
         
         self.assertEqual(len(result.sessions), 2)
@@ -47,6 +47,17 @@ create load:
         self.assertEqual(match.regex, "success")
 
 
+    def test_no_user_count(self):
+        parser = LoadParser()
+        code = """
+create session with weight 1 as 'test_var':
+    get '/foo'
+create load:                
+    spawn 1 users every 2 seconds for 3 seconds
+"""
+        with self.assertRaises(Exception):
+            result = parser.parse(code)
+
     def test_load(self):
         parser = LoadParser()
         result = parser.parse("""
@@ -54,21 +65,19 @@ create session with weight 1 as 'test1':
     get '/foo'
 
 create load:                
-    spawn 2 users every 4 seconds for 10 minutes up to 100 users
-    spawn 5 users every 10 seconds for 50 minutes
+    spawn users every 4 seconds for 10 minutes up to 100 users
+    spawn users every 10 seconds for 50 minutes
 
 """)
     
         self.assertEqual(len(result.load.spawns), 2)
         spawn1, spawn2 = result.load.spawns
-        self.assertEqual(spawn1.user_count, "2")
         self.assertEqual(spawn1.user_time, "4")
         self.assertEqual(spawn1.user_time_units, "seconds")
         self.assertEqual(spawn1.max_duration, "10")
         self.assertEqual(spawn1.max_duration_units, "minutes")
         self.assertEqual(spawn1.max_users, "100")
 
-        self.assertEqual(spawn2.user_count, "5")
         self.assertEqual(spawn2.user_time, "10")
         self.assertEqual(spawn2.user_time_units, "seconds")
         self.assertEqual(spawn2.max_duration, "50")
@@ -85,7 +94,7 @@ create session with weight 1 as 'test1':
     get '/foo'
 
 create load:                
-    spawn 1 users every 1 seconds for 1 seconds
+    spawn users every 1 seconds for 1 seconds
 """)
         # as long as we got here and the above didn't die, we're good
         self.assertTrue(True) 
@@ -96,7 +105,7 @@ create load:
 create session with weight 1 as 'test_var':
     pause between 1.5 and 3.2 seconds
 create load:                
-    spawn 1 users every 1 seconds for 1 seconds
+    spawn users every 1 seconds for 1 seconds
 """
         with self.assertRaises(Exception):
             result = parser.parse(code)
@@ -110,7 +119,7 @@ create session with weight 1 as 'test1':
     get '/foo'
 
 create load:                
-    spawn 1 users every 1 seconds for 1 seconds
+    spawn users every 1 seconds for 1 seconds
 """)
         session = result.sessions[0]
         self.assertEquals(len(session.actions), 3)
@@ -126,7 +135,7 @@ create load:
 create session with weight 1 as 'test_var':
     var user_name is a unique string of length 5 to 10
 create load:                
-    spawn 1 users every 1 seconds for 1 seconds
+    spawn users every 1 seconds for 1 seconds
 """
         with self.assertRaises(Exception):
             result = parser.parse(code)
@@ -141,7 +150,7 @@ create session with weight 1 as 'test_var':
     post '/user/create?user_name=$user_name&password=$password&pin=$pin'
 
 create load:                
-    spawn 1 users every 1 seconds for 1 seconds
+    spawn users every 1 seconds for 1 seconds
 """)
         session = result.sessions[0]
         self.assertEquals(len(session.actions), 4)
@@ -163,7 +172,7 @@ create session with weight 1 as 'test_file':
     using view_name, view_value from 'views.csv' randomly
     post '/view/create?name=$view_name&value=$view_value'
 create load:                
-    spawn 1 users every 1 seconds for 1 seconds
+    spawn users every 1 seconds for 1 seconds
 """)
         
         session = result.sessions[0]
@@ -181,7 +190,7 @@ create session with weight 1 as 'test_file':
     get all '/full'
     get '/single/page'
 create load:                
-    spawn 1 users every 1 seconds for 1 seconds
+    spawn users every 1 seconds for 1 seconds
 """)
 
         actions = result.sessions[0].actions
