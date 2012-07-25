@@ -49,6 +49,9 @@ class LoadParser:
         method = (get | post | put | delete).setResultsName("type")
 
         url = string.setResultsName("url")
+        data = Keyword("with") + Keyword("data") + \
+            string.setResultsName("data")
+
         match = Group( \
             Keyword("ensure") + Keyword("match") + \
             regex.setResultsName("regex"))
@@ -56,7 +59,7 @@ class LoadParser:
 
         request = Group(method + \
             Optional(Keyword("all")).setResultsName("all") + \
-            url + Optional(match_list)).setName("request")
+            url + Optional(data) + Optional(match_list)).setName("request")
         action = request | pause | var | using
         action_list = \
             Group(OneOrMore(action)).setResultsName("actions")

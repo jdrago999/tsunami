@@ -198,6 +198,19 @@ create load:
         self.assertTrue(full.all)
         self.assertFalse(single.all)
 
+    def test_get_all(self):
+        parser = LoadParser()
+        result = parser.parse("""
+create session with weight 1 as 'test_file':
+    post '/create' with data 'foo=bar&monkey=shoe'
+create load:                
+    spawn users every 1 seconds for 1 seconds
+""")
+
+        actions = result.sessions[0].actions
+        post = actions[0]
+        self.assertEqual(post.data, "foo=bar&monkey=shoe")
+
 if __name__ == '__main__':
     unittest.main()
 

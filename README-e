@@ -6,14 +6,15 @@ create session with weight 4 as 'test':
     get '/api'
     pause between 1.5 and 3.2 seconds
     delete '/view/view1'
-    post '/view?name=view2&value=foo'
+    post '/view' with data 'name=view2&value=foo'
         ensure match /^{"success": "View 'view2' created"}$/
 
 create session with weight 1 as 'test_vars':
     var pin is a unique number from 1000 to 9999
     var user_name is a random string of length 5
     var password is a random string of length 15
-    post '/user/create?user_name=$user_name&password=$password&pin=$pin'
+    post '/user/create' with data 
+         'user_name=$user_name&password=$password&pin=$pin'
 
 
 # views.csv should look like:
@@ -24,7 +25,7 @@ create session with weight 1 as 'test_vars':
 
 create session with weight 3 as 'test_using':
     using view_name, view_value from 'views.csv' randomly
-    post '/view/create?name=$view_name&value=$view_value'
+    post '/view/create' with data 'name=$view_name&value=$view_value'
 
 create session with weight 2 as 'test_get_all':
     # get both / and it's dependencies
