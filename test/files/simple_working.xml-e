@@ -36,7 +36,7 @@
         <match do="log" 
                when="nomatch">^{"success": "View 'view%%coincidence%%' created"}$</match>
         <match do="log" when="nomatch">success</match>
-        <http method="POST" url="/view?name=view2&amp;value=foo"
+        <http method="POST" url="/view" contents="name=view2&amp;value=foo"
               version="1.1" />
       </request>
       <request>

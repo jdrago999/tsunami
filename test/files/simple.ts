@@ -5,7 +5,7 @@ create session with weight 4 as 'test1':
     pause between 1 and 3 seconds
     delete '/view/view1'
     var coincidence is a random number from 1 to 2
-    post '/view?name=view2&value=foo'
+    post '/view' with data 'name=view2&value=foo'
         ensure match /^{"success": "View 'view$coincidence' created"}$/
         ensure match /success/
     get all '/'

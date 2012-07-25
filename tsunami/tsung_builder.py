@@ -108,7 +108,8 @@ class TsungBuilder(object):
         else:
             regex_matches = [m.regex for m in a.matches]
             return self.get_request(method=a.method, url=a.url, \
-                regex_matches=regex_matches, retrieve_all=a.all)
+                regex_matches=regex_matches, retrieve_all=a.all, \
+                data=a.data)
     
     def get_using(self, u):
         
@@ -148,7 +149,8 @@ class TsungBuilder(object):
     def add_csv(self, file_id, filename):
         self.csvs.append((file_id, filename))
 
-    def get_request(self, url, method, regex_matches, retrieve_all=False):
+    def get_request(self, url, method, regex_matches,
+                    retrieve_all=False, data=None):
         outer_tags = []
         method = method.upper()
 
@@ -158,7 +160,10 @@ class TsungBuilder(object):
         # TODO: Make sure we can have multiple set vars with the same name
         if retrieve_all:
             inner_tags.extend(self.get_dependency_vars())
-        inner_tags.append(E.http(url=new_url, method=method, version="1.1"))
+        http_attrs = dict(url=new_url, method=method, version="1.1")
+        if data:
+            http_attrs["contents"] = data
+        inner_tags.append(E.http(**http_attrs))
 
         req_attrs = dict()
 
@@ -169,7 +174,6 @@ class TsungBuilder(object):
         url_has_substitutions = url != new_url
         if url_has_substitutions or match_has_substitutions:
             req_attrs["subst"] = "true"
-
         outer_tags.append(E.request(*inner_tags, **req_attrs)) 
         if retrieve_all:
             for name in ("css", "img", "script"):
