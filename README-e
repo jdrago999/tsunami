@@ -2,19 +2,33 @@ A language for making load tests easy.  Simply specify a load test file
 like:
 
 # simple.ts
-create session with weight 4 as 'test1':
+create session with weight 4 as 'test':
     get '/api'
     pause between 1.5 and 3.2 seconds
     delete '/view/view1'
     post '/view?name=view2&value=foo'
         ensure match /^{"success": "View 'view2' created"}$/
-        ensure match /success/
 
-create session with weight 1 as 'test2':
+create session with weight 1 as 'test_vars':
     var pin is a unique number from 1000 to 9999
     var user_name is a random string of length 5
     var password is a random string of length 15
     post '/user/create?user_name=$user_name&password=$password&pin=$pin'
+
+
+# views.csv should look like:
+# a_view;23
+# another_view;42
+# ...
+# and should live in the same directory as simple.ts
+
+create session with weight 3 as 'test_using':
+    using view_name, view_value from 'views.csv' randomly
+    post '/view/create?name=$view_name&value=$view_value'
+
+create session with weight 2 as 'test_get_all':
+    # get both / and it's dependencies
+    get all '/'
 
 create load:                
     spawn 2 users every 4 seconds for 10 minutes up to 100 users
@@ -28,4 +42,23 @@ python ts2tsung.py --from=simple.ts --to=tsung.xml
 
 or you can invoke tsung driectly with
 
-python runts.py --source=simple.ts
+python runts.py --source=simple.ts --source_files_dir simple_files
+
+(if --source_files_dir is unspecified, it will default to the same
+directory that the --source file lives in)
+
+
+KNOWN BUGS:
+  * runts.py will copy all of the files in --source_files_dir to a
+    temporary directory, even if tsung doesn't need them.  Thus, you
+    should place all the files you need for your script in a directory
+    that doesn't contain any extraneous files
+
+  * the result of any weight divided by the total weight must have a
+    two digits after the decimal point.  So weights of 3, 4, 5 (total
+    12) won't work because  5/12 = .41666.  Weights of 12, 5, 3 (total
+    20) will work however because 12/20 = .6, 5/20 = .25, and 
+    3 / 20 = .15. One easy way to avoid this problem is to make sure
+    your weights total up to any factor of 100.  Those being 1, 2, 4,
+    5, 10, 20, 50, 100
+
