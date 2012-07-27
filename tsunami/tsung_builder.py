@@ -7,10 +7,12 @@ from pprint import pprint
 # TODO: Grep out non local http requests for request_all
 
 class TsungBuilder(object):
-    def __init__(self, config={}, output_path="."):
+    def __init__(self, config={}, output_path=".",
+                 server_hostname="localhost", server_port=80):
         self.config = config
         self.output_path = output_path
-        self.server_hostname = "localhost"
+        self.server_hostname = server_hostname
+        self.server_port = server_port
         self.csvs = []
 
 
@@ -53,7 +55,8 @@ class TsungBuilder(object):
         
     def get_servers(self):
         return E.servers(
-            E.server(host=self.server_hostname, port="8000", type="tcp"))
+            E.server(host=self.server_hostname, \
+                         port=str(self.server_port), type="tcp"))
 
     def get_load(self):
         load = self.config.load

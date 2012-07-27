@@ -18,6 +18,12 @@ if __name__ == '__main__':
     cmd_parser.add_argument('--environment', type=str, 
                             help='testing environment',
                             default="tsung")
+    cmd_parser.add_argument('--host', type=str, 
+        help="hostname of server to test", default="locahost")
+    cmd_parser.add_argument('--port', type=str, 
+        help="port of server to test", default="80")
+
+
     args = cmd_parser.parse_args()
 
     if not args.source_files_dir:
@@ -34,7 +40,8 @@ if __name__ == '__main__':
     for filename in glob.glob(os.path.join(args.source_files_dir, '*.*')):
         shutil.copy(filename, to_dir)
 
-    tb = TsungBuilder(config, to_dir)
+    tb = TsungBuilder(config, to_dir, 
+        server_hostname=args.host, server_port=args.port)
     to_filename = os.path.join(to_dir, "tsung.xml")
     with open(to_filename, "w+") as f:
         f.write(tb.get_xml())    

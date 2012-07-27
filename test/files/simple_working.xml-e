@@ -5,7 +5,7 @@
     <client host="localhost" use_controller_vm="true"/>
   </clients>
   <servers>
-    <server host="localhost" port="8000" type="tcp"/>
+    <server host="localhost" port="80" type="tcp"/>
   </servers>
   <load>
     <arrivalphase phase="1" duration="2" unit="minute">
