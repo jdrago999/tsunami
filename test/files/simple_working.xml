@@ -84,9 +84,8 @@
         <var name="pass_code" />
       </setdynvars>
       <request subst="true">
-        <http 
-url="/user/create?username=%%username%%&amp;pass_code=%%pass_code%%&amp;pin=%%pin%%" 
-            version="1.1" method="POST"/>
+        <http url="/user/create"
+           contents="username=%%username%%&amp;pass_code=%%pass_code%%&amp;pin=%%pin%%" version="1.1" method="POST"/>
       </request>
     </session>
   </sessions>

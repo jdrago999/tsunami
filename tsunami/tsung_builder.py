@@ -165,17 +165,19 @@ class TsungBuilder(object):
             inner_tags.extend(self.get_dependency_vars())
         http_attrs = dict(url=new_url, method=method, version="1.1")
         if data:
-            http_attrs["contents"] = data
+            http_attrs["contents"] = self.substitute(data)
         inner_tags.append(E.http(**http_attrs))
 
         req_attrs = dict()
 
         # figure out if any matches have substitutions.  This happens
         # when any of the match regexes contian '$word'
+        data_has_substitutions = self.substitute(data) != data
         match_has_substitutions = bool([regex for regex in regex_matches 
             if self.substitute(regex) != regex])
         url_has_substitutions = url != new_url
-        if url_has_substitutions or match_has_substitutions:
+        if (url_has_substitutions or match_has_substitutions or 
+            data_has_substitutions):
             req_attrs["subst"] = "true"
         outer_tags.append(E.request(*inner_tags, **req_attrs)) 
         if retrieve_all:
