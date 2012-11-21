@@ -85,7 +85,7 @@
       </setdynvars>
       <request subst="true">
         <http url="/user/create"
-           contents="username=%%username%%&amp;pass_code=%%pass_code%%&amp;pin=%%pin%%" version="1.1" method="POST"/>
+           contents="username=%%username%%&amp;pass_code=%%pass_code%%&amp;pin=%%pin%%&amp;view_name=%%_view_name%%" version="1.1" method="POST"/>
       </request>
     </session>
   </sessions>

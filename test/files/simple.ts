@@ -16,7 +16,8 @@ create session with weight 12 as 'test2':
                                                  # make testing easy
     var username is a random string of length 10
     var pass_code is a random number from 1000 to 9999
-    post '/user/create' with data 'username=$username&pass_code=$pass_code&pin=$pin'
+    post '/user/create' with data
+    'username=$username&pass_code=$pass_code&pin=$pin&view_name=$view_name'
 create load:                
     spawn users every 4 seconds for 2 minutes up to 100 users
     spawn users every 10 seconds for 3 minutes

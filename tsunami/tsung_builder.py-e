@@ -14,6 +14,7 @@ class TsungBuilder(object):
         self.server_hostname = server_hostname
         self.server_port = server_port
         self.csvs = []
+        self.using_vars = set()
 
 
     def get_xml(self):
@@ -115,7 +116,8 @@ class TsungBuilder(object):
                 data=a.data)
     
     def get_using(self, u):
-        
+        for v in u.vars:
+            self.using_vars.add(v) 
         var_tags = [E.var(name=v) for v in u.vars]
         base_filename = os.path.splitext(u.filename)[0]
         file_id = "%s_file" % base_filename
@@ -213,9 +215,15 @@ class TsungBuilder(object):
 
         return E.match(sub_regex, do="log", when="nomatch") 
 
-    def substitute(self, s):
-        """replace $word with %%word%%"""
-        return re.sub(r'\$(\w+)', r'%%\1%%', s)
+    def substitute(self, string):
+        """replace $word with %%word%% for normal variables and
+        %%_word%% for variables from `using` clauses"""
+
+        using_string = string
+        for v in self.using_vars:
+            using_string = using_string.replace("$%s" % v, '%%_' + v +
+                                                '%%')
+        return re.sub(r'\$(\w+)', r'%%\1%%', using_string)
 
     def create_range_file(self, name, range_min, range_max):
         self.create_ouptupt_path()
