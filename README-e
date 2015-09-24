@@ -1,4 +1,4 @@
-A language for making load tests easy.  Simply specify a load test file
+A language for making Tsung load tests easy.  Simply specify a load test file
 like:
 
 # simple.ts
@@ -13,7 +13,7 @@ create session with weight 1 as 'test_vars':
     var pin is a unique number from 1000 to 9999
     var user_name is a random string of length 5
     var password is a random string of length 15
-    post '/user/create' with data 
+    post '/user/create' with data
          'user_name=$user_name&password=$password&pin=$pin'
 
 
@@ -31,11 +31,10 @@ create session with weight 2 as 'test_get_all':
     # get both / and it's dependencies
     get all '/'
 
-create load:                
+create load:
     spawn 2 users every 4 seconds for 10 minutes up to 100 users
     spawn 5 users every 10 seconds for 50 minutes
 # end simple.ts
-
 
 Then compile it to tsung a tsung xml file with
 
@@ -58,8 +57,11 @@ KNOWN BUGS:
   * the result of any weight divided by the total weight must have a
     two digits after the decimal point.  So weights of 3, 4, 5 (total
     12) won't work because  5/12 = .41666.  Weights of 12, 5, 3 (total
-    20) will work however because 12/20 = .6, 5/20 = .25, and 
+    20) will work however because 12/20 = .6, 5/20 = .25, and
     3 / 20 = .15. One easy way to avoid this problem is to make sure
     your weights total up to any factor of 100.  Those being 1, 2, 4,
     5, 10, 20, 50, 100
 
+FURTHER DOCUMENTATION:
+
+Further documentation is available in docs/Tsunami.trackwiki

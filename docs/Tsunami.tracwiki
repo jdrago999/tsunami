@@ -1,0 +1,345 @@
+= Tsunami =
+
+Tsunami is a Language and system for quickly and easily creating load tests.  Tsunami uses [http://tsung.erlang-projects.org/ Tsung] to perform load tests, but simplifies its configuration greatly.
+
+== Installation ==
+
+Run the following commands to install tsunami (currently only tested on Ubuntu 10.  Other OS's will probably need some (or a lot of) modification of this):
+
+{{{
+# Install apt dependencies
+sudo apt-get install libxml2-dev tsung
+
+# Install python dependencies
+sudo pip install lxml
+sudo pip install pyparsing
+
+# checkout tsunami from git.
+cd ~/Projects && git clone git@git.:tsunami.git
+}}}
+
+== Example Code ==
+
+All the example scripts noted in this documentation can be found in the examples/ directory in the tsunami git repository.
+
+== Quick Start ==
+
+Probably the simplest Tsunami script possible follows:
+
+{{{
+# hello_world.ts
+
+create session with weight 1 as 'hello_world':
+       get '/'
+
+create load:
+    spawn users every 4 seconds for 10 minutes up to 100 users
+}}}
+
+
+This simple script will grab the homepage of a given website 100 times.  To run the this script, simply type the following at a command prompt:
+
+{{{
+./runts.py --source hello_world.ts --host localhost
+}}}
+
+This will convert the source file into a tsung config and run it against the given host.  You'll see some output from Tsung like this:
+
+{{{
+Starting Tsung
+"Log directory is: /home/youruser/.tsung/log/20120726-1256"
+}}}
+
+The test should take about 2 minutes, and if you peek at your web server's access logs, you should see 100 hits against localhost from the tsung client.  If you'd like to see a report with the results of the test, change to the directory noted in Tsung's output, then run:
+
+{{{
+/usr/lib/tsung/bin/tsung_stats.pl
+}}}
+
+This will generate an html report, which you can view by opening report.html in your browser.
+
+Let's explore what each part of this script means.  The 'create session' statement creates a simulated user that will execute the actions that follow.  More complex scripts will have multiple sessions, and that is where the weight comes in.  When creating a new simulated user, the load engine (Tsung) will choose one session at random from all  the sessions specified.  The session will be chosen with a probability proportional to its weight.  Since we only have one session, the weight doesn't really matter in this case.  No matter what number we choose, this single session will be chosen with each new user.  Finally, in the first line we specify a name for our session.  This is used for the programmers reference, to keep straight which session is doing what, and for correlating the sessions in a tsunami source file and the generated Tsung config file.
+
+Next, inside the session declaration, we have a single action, "get '/'" which as you might expect, tells the system to preform an HTTP GET request to the server's home page.  Tsunami also allows other HTTP method types such as POST.  There are also other types of actions that specify variables, make the simulated user pause for few seconds and more.
+
+After our session declaration is complete, we use the "create load" section to tell the system how much load we want to create.  The "spawn users" statement specifies a phase in which a user will be created every 4 seconds, stopping after 10 minutes or after 100 user sessions have been created, whichever happens first.  However, this is a little misleading in this small example because our test only took a couple minutes to run.  This is certainly less that 10 minutes, and is also less than the 6-7 minutes it would take to get 100 hits, one every 4 seconds.  This is because Tsung doesn't just run a single session every 4 seconds.  Its starts many users at the same time, in parallel.  In fact, this load test actually only makes requests for about 30 seconds.  The additional time comes from Tsung doing its setup and teardown procedures which take about a minute each.
+
+So that explains your first Tsunami script.  We could have run **this** test with the simple load testing tool [http://httpd.apache.org/docs/2.2/programs/ab.html ab], but Tsunami is more powerful than this simple example, and in studying the documentation that follows you can harness that power.
+
+== Language Reference ==
+
+=== Basic Tsunami Script Structure ===
+
+A Tsunami script consists of two basic sections.  First, one or more [#CreateSession create session] blocks, followed by a single [#CreateLoad create load] block.
+
+**Example**:
+{{{
+# basic_structure.ts
+
+create session with weight 4 as 'test1':
+    get '/'
+
+create session with weight 1 as 'test2':
+    get '/about/'
+
+create load:
+    spawn users every 1 seconds for 1 minutes
+}}}
+
+[=#CreateSession]
+=== create session ===
+
+A Session is a definition of a user that the load engine will simulate.  A `create session` block has the following structure:
+
+**create session with weight** //weight// **as** //name//**:** \\ //actions//
+
+With:
+
+* //weight// - an integer which defines how often this session will be run relative to the other sessions.  For instance, if you have two sessions, one with a weight of 1 and the other with a weight of 3, the first will be run a quarter of the time, and the second 3/4 of the time.  Please note the known bug below.
+* //name// - a [#Strings string] which gives a name for this session.
+* //actions// - on or more [#Actions actions] that should be performed in this session
+
+||= **Known Bug! =||
+|| The result of any weight divided by the total weight must have two digits after the decimal point.  So weights of 3, 4, 5 (total 12) won't work because  5/12 = .41666. Weights of 12, 5, 3 (total 20) will work however because 12/20 = .6, 5/20 = .25, and 3 / 20 = .15. One easy way to avoid this problem is to make sure your weights total up to any factor of 100.  Those being 1, 2, 4, 5, 10, 20, 50, 100 ||
+
+**Example:**
+{{{
+# simple_session.ts
+
+create session with weight 4 as 'show session':
+    get "/"
+
+create load:
+    spawn users every 1 seconds for 1 minutes
+}}}
+
+
+[=#Actions]
+=== Actions ===
+
+There are several types of actions available in each session.  Namely, [#Requests Requests], [#Variables Variable Definitions], [#Pasue Pause Statements], and [#Using Using Statements]
+
+[=#Requests]
+==== Requests ====
+
+A request statement performs an HTTP request against the server.  It's basic structure is:
+
+//method// //url//
+
+With:
+
+* //method// - the HTTP method type, being **get**, **post**, **put** or **delete**
+* //url// - a [#Strings string] specifying the relative path of the document to be retrieved.  For instance `"/company/leadership?person=Mathew"`
+
+With a **post** request, you can specify the data that should be posted with the following syntax:
+
+**post** //url// **with data** //data//
+
+Where:
+
+* //data// - is a [#Strings string] with the data to be posted, such as `"foo=bar&primate=monkey"`
+
+Also, with any request, you can check the response against one or more [#RegularExpressions regular expressions] like this:
+
+//method// //url// \\**ensure match** //regex// \\**ensure match** //regex//...
+
+With:
+* //regex// - a [#RegularExpressions regular expression] to check against the response.
+
+Finally, if you with to fetch an html page, and all of its associated images, css and javascript code, you needen't write **get** requests for each file.  Simply use **get all**, with the syntax:
+
+**get all** //url//
+
+
+**Examples:**
+{{{
+# requests.ts
+create session with weight 4 as 'request_example':
+    get all "/"
+    delete '/bookmarks/1234'
+    post '/view/create/' with data 'name=view2&value=foo'
+        ensure match /^{"success": "View 'view2' created"}$/
+
+create load:
+    spawn users every 1 seconds for 1 minutes
+}}}
+
+
+
+[=#Variables]
+==== Variable Definitions ====
+
+The var statement defines a generated variable for use elsewhere in a session.  The syntax for a numeric variable is:
+
+**var** //name// **is a** //ordering// **number from** //min// to //max//
+
+Where:
+
+* //name// - is an [#Identifiers identifier] specifying a name for the variable
+* //min// - is the minimum possible value for the variable
+* //max// - is the maximum possible value for the variable
+* //ordering// - is one of **unique** or **random**.  If **random**, the variable is assigned randomly within the range given.  If **unique**, the first time a session executes, //min// is used.  For each subsequent execution, the value is incremented until it reaches //max// at which point the value is set to //min// again, and the process repeats.
+
+To assign a variable a random string (useful for generating mock user names, passwords, or other faked data), use this syntax:
+
+**var** //name// **is a random string of length** //length//
+
+Where:
+
+* //name// - is an [#Identifiers identifier] specifying a name for the variable
+* //length// - is the length of the string.
+
+Once you've created a variable, you can use it in a url string in a [#Request request] statement, the [#RegularExpression regular expression] in a request statement's match clause or in the data clause of a **post** statement.  If you need to populate a variable from the values in a file, see the [#Using Using] statement.
+
+**Examples:**
+
+{{{
+# var.ts
+create session with weight 1 as 'show_var':
+    var product_id is a unique number from 1 to 10
+    var pin is a random number from 1000 to 9999
+    var user_name is a random string of length 5
+    var password is a random string of length 15
+
+    get '/product/$product_id'
+    post '/user/create' with data 'user_name=$user_name&password=$password&pin=$pin'
+
+create load:
+    spawn users every 1 seconds for 1 seconds
+}}}
+
+[=#Pause]
+==== Pasue Statements ====
+
+The **pause** statement causes the load engine to stop executing commands for some period of time.  This is useful to simulate the amount of time a user takes to think, or read.  To pause for a random amount of time in a given range, type:
+
+**pause between** //min// and //max// //time period//
+
+Where:
+
+* //min// - is the minimum time to wait.
+* //max// - is the minimum time to wait.
+* //time period// - is one of **minutes** or **seconds**
+
+**Example**:
+{{{
+# pause.ts
+create session with weight 1 as 'show_pause':
+    get '/bar'
+    pause between 1 and 3 seconds
+    get '/foo'
+
+create load:
+    spawn users every 1 seconds for 1 seconds
+}}}
+
+
+[=#Using]
+==== Using Statements ====
+
+The **using** statement is used to populate variables from an external file.  Entries in the file should be semi-colon (;) delimited, such as:
+
+{{{
+Denver;CO
+San Francisco;CA
+Omaha;NE
+}}}
+
+Records from such a file can be loaded with the syntax:
+
+**using** //variable list// **from** //filename// //order//
+
+Where:
+
+* //variable list// - is a comma delimited list of variable [#Identifiers identifiers].  These should correspond to the columns in the file
+* //filename// - is the name of the semi-colon delimited file containing the relevant data. Generally, this should be relevant to the location of this tsunami script
+* //order// - is either **randomly** or **sequentially**.  If sequential, the first execution of the session will pull the first row from the file, the second execution the second row and so on.  Once the last line is reached, the next execution will return to the first row. If random, a random row will be chosen for each execution.
+
+Once populated, these variables can be used in the same way as any other [#Variables Variable].
+
+**Example**
+{{{
+# using.ts
+create session with weight 1 as 'show_file':
+    using ctiy, state from 'cities.csv' sequentially
+    get '/city-info/$state-$city/
+
+create load:
+    spawn users every 1 seconds for 1 seconds
+}}}
+
+
+
+[=#CreateLoad]
+== create load ==
+
+The `create load` block specifies how much load the load engine should generate.  It has the following structure:
+
+**create load:** \\ //spawn statements//
+
+With:
+
+* //spawn statements// - one or more [#Spawn Spawn] statements.
+
+**Example:**
+
+{{{
+# simple_load.ts
+create session with weight 1 as 'test1':
+    get '/'
+
+create load:
+    spawn users every 3 seconds for 4 minutes
+    spawn users every 2 seconds for 5 minutes
+}}}
+
+[=#Spawn]
+=== Spawn ===
+
+A spawn statement tells the load engine at what rate to create users, for how long, and if a there is a maximum number of users.  It has the structure:
+
+**spawn users every** //rate// **for** //duration//
+
+or
+
+**spawn users every** //rate// **for** //duration// **up to** //max number of users// **users**
+
+With:
+
+* //rate// - The rate at which to create users.  For example, every **2 minutes** or every **90 seconds**
+* //duration// - How long to spawn users for. For example for **10 minutes** or **12 seconds**
+* //max number of users// - The maximum number of users to spawn.  If this number is reached before //duration// is up, this spawn phase is stopped
+
+if multiple spawn statements are specified, they are executed in sequence as separate phases.  For an example of **spawn** statements, see the [#CreateLoad Create Load] example code.
+
+[=#General]
+== General Language Constructs ==
+
+[=#RegularExpressions]
+=== regular expressions ===
+
+An [http://www.erlang.org/doc/man/re.html Erlang-compatible regular expression] surrounded by slashes (/).  `/^shoe$/` is an example of a valid regular expression.
+
+[=#Strings]
+=== strings ===
+
+a string is a string of characters surrounded by either single quotes (') or double quotes (").  Thus, `"Shoe"` and `'A really stinky, but still cute, monkey'` are both examples of valid strings
+
+[=#Identifiers]
+=== identifiers ===
+
+an identifier is a single letter or underscore, followed by zero or more letters, numbers, or underscores
+
+=== Running Tsunami Scripts ===
+
+The `runts.py` utility is used to run Tsunami load test script.  It takes a Tsunami script, converts it into a Tsung configuration file and runs Tsung with that configuration.  RunTS is a command line script that takes the following options:
+
+* `--source` - The path to the Tsunami source file to run.
+* `--source_files_dir` - The path to any data files used in any [#Using using statements].  Defaults to the same directory to that in which the source script itself resides.
+* `--host` - The hostname of the server to run the load test against.  Defaults to `localhost`
+* `--port` - The port of the server to run the load test against. Defaults to `80`
+* `--environment` - The load testing software to use to run the load test.  Currently the only supported (and default) option is `tsung`
+
+||= **Known Bug! =||
+|| runts.py will copy all of the files in --source_files_dir to a temporary directory, even if tsung doesn't need them.  Thus, you should place all the files you need for your script in a directory that doesn't contain any extraneous files.
+ ||
