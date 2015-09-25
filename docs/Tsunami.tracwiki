@@ -14,8 +14,8 @@ sudo apt-get install libxml2-dev tsung
 sudo pip install lxml
 sudo pip install pyparsing
 
-# checkout tsunami from git.
-cd ~/Projects && git clone git@git.:tsunami.git
+# checkout tsunami from github.
+cd ~/Projects && git clone git@github.com:inflection/tsunami.git
 }}}
 
 == Example Code ==
